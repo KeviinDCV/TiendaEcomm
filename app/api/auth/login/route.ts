@@ -145,7 +145,7 @@ export async function POST(request: NextRequest) {
             return NextResponse.json<AuthResponse>(
                 { 
                     success: false, 
-                    message: `Credenciales incorrectas. ${5 - newFailedAttempts} intentos restantes antes del bloqueo` 
+                    message: 'Credenciales incorrectas' 
                 },
                 { status: 401 }
             );
