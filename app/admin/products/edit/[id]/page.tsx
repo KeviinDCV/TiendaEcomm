@@ -19,8 +19,8 @@ const CATEGORIES = [
     'Diagnóstico'
 ];
 
-export default function EditProductPage({ params }: { params: { id: string } }) {
-    const { id } = params;
+export default function EditProductPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = use(params);
     const router = useRouter();
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -157,7 +157,7 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
             <form onSubmit={handleSubmit} className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 space-y-6">
                 {/* Imagen Upload */}
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Imagen del Producto</label>
+                    <label htmlFor="product-image" className="block text-sm font-medium text-gray-700 mb-2">Imagen del Producto</label>
                     <div className="flex items-center gap-6">
                         <div className="h-32 w-32 bg-gray-100 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden relative">
                             {imagePreview ? (
@@ -171,6 +171,8 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
                         <div className="flex-1">
                             <input 
                                 type="file" 
+                                id="product-image"
+                                name="image"
                                 accept="image/*"
                                 onChange={handleImageChange}
                                 className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20"
@@ -183,9 +185,11 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
                 {/* Información Básica */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="md:col-span-2">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Nombre del Producto</label>
+                        <label htmlFor="product-name" className="block text-sm font-medium text-gray-700 mb-1">Nombre del Producto</label>
                         <input 
                             type="text" 
+                            id="product-name"
+                            name="name"
                             required
                             value={formData.name}
                             onChange={(e) => setFormData({...formData, name: e.target.value})}
@@ -194,9 +198,11 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Precio (COP)</label>
+                        <label htmlFor="product-price" className="block text-sm font-medium text-gray-700 mb-1">Precio (COP)</label>
                         <input 
                             type="number" 
+                            id="product-price"
+                            name="price"
                             required
                             min="0"
                             value={formData.price}
@@ -206,9 +212,11 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Precio Original (Antes)</label>
+                        <label htmlFor="product-original-price" className="block text-sm font-medium text-gray-700 mb-1">Precio Original (Antes)</label>
                         <input 
                             type="number" 
+                            id="product-original-price"
+                            name="originalPrice"
                             min="0"
                             value={formData.originalPrice}
                             onChange={(e) => setFormData({...formData, originalPrice: e.target.value})}
@@ -217,9 +225,11 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Stock Disponible</label>
+                        <label htmlFor="product-stock" className="block text-sm font-medium text-gray-700 mb-1">Stock Disponible</label>
                         <input 
                             type="number" 
+                            id="product-stock"
+                            name="stock"
                             required
                             min="0"
                             value={formData.stock}
@@ -237,8 +247,10 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
                 </div>
 
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+                    <label htmlFor="product-description" className="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
                     <textarea 
+                        id="product-description"
+                        name="description"
                         required
                         rows={4}
                         value={formData.description}
@@ -252,6 +264,7 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
                         <input 
                             type="checkbox" 
                             id="isActive"
+                            name="isActive"
                             checked={formData.isActive}
                             onChange={(e) => setFormData({...formData, isActive: e.target.checked})}
                             className="rounded text-primary focus:ring-primary h-4 w-4"
@@ -263,6 +276,7 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
                         <input 
                             type="checkbox" 
                             id="isFeatured"
+                            name="isFeatured"
                             checked={formData.isFeatured}
                             onChange={(e) => setFormData({...formData, isFeatured: e.target.checked})}
                             className="rounded text-primary focus:ring-primary h-4 w-4"

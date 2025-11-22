@@ -2,11 +2,28 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 
-import { products as featuredProducts, categories } from './data/products';
 import PaymentStrip from './components/PaymentStrip';
+
+interface Category {
+  id: number;
+  name: string;
+}
+
+interface Product {
+  id: number;
+  name: string;
+  description: string;
+  price: number;
+  original_price: number | null;
+  stock: number;
+  category: string;
+  image_url: string;
+  is_featured: number;
+  discount_percentage: number;
+}
 
 export default function HomePage() {
   const [cartCount, setCartCount] = useState(3);
@@ -14,7 +31,64 @@ export default function HomePage() {
   const [department, setDepartment] = useState('Todos');
   const [currentSlide, setCurrentSlide] = useState(0);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loadingCategories, setLoadingCategories] = useState(true);
+  const [showAllCategories, setShowAllCategories] = useState(false);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loadingProducts, setLoadingProducts] = useState(true);
+  const categoryDropdownRef = useRef<HTMLDivElement>(null);
+  
   const { user, logout } = useAuth();
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await fetch('/api/categories');
+        const data = await res.json();
+        if (data.success) {
+          setCategories(data.categories);
+        }
+      } catch (error) {
+        console.error('Error loading categories', error);
+      } finally {
+        setLoadingCategories(false);
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const res = await fetch('/api/products/ofertas');
+        const data = await res.json();
+        if (data.success) {
+          setProducts(data.products);
+        }
+      } catch (error) {
+        console.error('Error loading products', error);
+      } finally {
+        setLoadingProducts(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (categoryDropdownRef.current && !categoryDropdownRef.current.contains(event.target as Node)) {
+        setShowAllCategories(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   const slides = [
     {
@@ -174,17 +248,60 @@ export default function HomePage() {
         </div>
 
         {/* Secondary Navigation */}
-        <div className="bg-gray-800 h-10 flex items-center px-4 text-sm gap-6 overflow-x-auto hide-scrollbar">
-          <button className="flex items-center gap-1 font-bold hover:bg-white/10 px-2 py-1 rounded transition-colors">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-            Todo
-          </button>
-          {categories.slice(0, 6).map((cat) => (
-            <a key={cat} href="#" className="whitespace-nowrap hover:bg-white/10 px-2 py-1 rounded transition-colors">{cat}</a>
-          ))}
-          <a href="#" className="whitespace-nowrap hover:bg-white/10 px-2 py-1 rounded font-bold text-primary transition-colors">Ofertas del Día</a>
+        <div className="bg-gray-800 h-10 flex items-center px-4 text-sm gap-6 overflow-visible relative">
+          <div ref={categoryDropdownRef} className="relative">
+            <button 
+                onClick={() => setShowAllCategories(!showAllCategories)}
+                className="flex items-center gap-1 font-bold hover:bg-white/10 px-2 py-1 rounded transition-colors"
+            >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+                Todo
+            </button>
+
+            {/* Dropdown Menu */}
+            {showAllCategories && (
+                <div className="absolute top-full left-0 mt-1 w-64 bg-white text-gray-800 shadow-xl rounded-md border border-gray-200 py-2 z-50 animate-in fade-in zoom-in-95 duration-100">
+                    <div className="px-4 py-2 bg-gray-50 border-b border-gray-100 mb-2">
+                        <h3 className="font-bold text-lg">Categorías</h3>
+                    </div>
+                    <div className="max-h-[400px] overflow-y-auto">
+                        {loadingCategories ? (
+                            <div className="px-4 py-2 text-gray-500">Cargando...</div>
+                        ) : categories.length > 0 ? (
+                            categories.map((cat) => (
+                                <Link 
+                                    key={cat.id} 
+                                    href={`/category/${cat.id}`}
+                                    className="block px-4 py-2 hover:bg-gray-100 transition-colors"
+                                    onClick={() => setShowAllCategories(false)}
+                                >
+                                    {cat.name}
+                                </Link>
+                            ))
+                        ) : (
+                            <div className="px-4 py-2 text-gray-500">No hay categorías</div>
+                        )}
+                    </div>
+                </div>
+            )}
+          </div>
+
+          <div className="flex items-center gap-6 overflow-x-auto hide-scrollbar">
+            {loadingCategories ? (
+                [1,2,3,4,5].map(i => (
+                    <div key={i} className="h-4 w-20 bg-white/10 rounded animate-pulse"></div>
+                ))
+            ) : (
+                categories.slice(0, 6).map((cat) => (
+                    <Link key={cat.id} href={`/category/${cat.id}`} className="whitespace-nowrap hover:bg-white/10 px-2 py-1 rounded transition-colors">
+                        {cat.name}
+                    </Link>
+                ))
+            )}
+          </div>
+          <Link href="/ofertas" className="whitespace-nowrap hover:bg-white/10 px-2 py-1 rounded font-bold text-primary transition-colors ml-auto">Ofertas del Día</Link>
         </div>
       </header>
 
@@ -273,66 +390,115 @@ export default function HomePage() {
               <a href="#" className="text-primary text-sm hover:underline mb-1">Ver todas</a>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-              {featuredProducts.map((product) => (
-                <div key={product.id} className="bg-white rounded-md shadow-sm hover:shadow-lg transition-shadow cursor-pointer flex flex-col">
-                  <div className="h-48 border-b border-gray-50 p-4 flex items-center justify-center relative">
-                    <img src={product.image} alt={product.name} className="max-h-full max-w-full object-contain mix-blend-multiply" />
-                    <div className="absolute top-2 right-2 bg-white rounded-full p-1 shadow-sm text-primary hover:bg-blue-50">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                      </svg>
+            {loadingProducts ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                {[1,2,3,4].map(i => (
+                  <div key={i} className="bg-white rounded-md shadow-sm h-80 animate-pulse">
+                    <div className="h-48 bg-gray-200"></div>
+                    <div className="p-4 space-y-3">
+                      <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                      <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                      <div className="h-6 bg-gray-200 rounded w-2/3"></div>
                     </div>
                   </div>
-                  <div className="p-4 flex-1 flex flex-col">
-                    <h3 className="text-gray-900 text-sm font-light line-clamp-2 mb-2 h-10">
-                      {product.name}
-                    </h3>
-
-                    <div className="mb-1">
-                      <span className="text-xs text-gray-400 line-through">${product.originalPrice.toLocaleString('es-ES')}</span>
-                    </div>
-
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-2xl text-gray-900 font-normal">${product.price.toLocaleString('es-ES')}</span>
-                      <span className="text-sm text-green-600 font-medium">{product.discount}% OFF</span>
-                    </div>
-
-                    <div className="text-xs text-green-600 font-bold mb-1">
-                      Llega gratis mañana
-                    </div>
-
-                    <div className="text-xs text-gray-500">
-                      en 36x $ {(product.price / 36).toLocaleString('es-ES', { maximumFractionDigits: 0 })}
-                    </div>
-
-                    {product.isFeatured && (
-                      <div className="mt-2">
-                        <span className="bg-blue-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-sm uppercase tracking-wide">
-                          MÁS VENDIDO
-                        </span>
+                ))}
+              </div>
+            ) : products.length === 0 ? (
+              <div className="bg-white rounded-lg shadow-sm p-12 text-center">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto text-gray-300 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                </svg>
+                <h3 className="text-xl text-gray-600 font-medium mb-2">No hay productos en oferta</h3>
+                <p className="text-gray-500">Por el momento no tenemos productos con descuento disponibles.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                {products.map((product) => (
+                  <div key={product.id} className="bg-white rounded-md shadow-sm hover:shadow-lg transition-shadow cursor-pointer flex flex-col">
+                    <div className="h-48 border-b border-gray-50 p-4 flex items-center justify-center relative">
+                      {product.image_url ? (
+                        <img src={product.image_url} alt={product.name} className="max-h-full max-w-full object-contain mix-blend-multiply" />
+                      ) : (
+                        <div className="flex items-center justify-center h-full w-full bg-gray-100">
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                          </svg>
+                        </div>
+                      )}
+                      <div className="absolute top-2 right-2 bg-white rounded-full p-1 shadow-sm text-primary hover:bg-blue-50 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                        </svg>
                       </div>
-                    )}
+                    </div>
+                    <div className="p-4 flex-1 flex flex-col">
+                      <h3 className="text-gray-900 text-sm font-light line-clamp-2 mb-2 h-10">
+                        {product.name}
+                      </h3>
+
+                      {product.original_price && (
+                        <div className="mb-1">
+                          <span className="text-xs text-gray-400 line-through">${product.original_price.toLocaleString('es-CO')}</span>
+                        </div>
+                      )}
+
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-2xl text-gray-900 font-normal">${product.price.toLocaleString('es-CO')}</span>
+                        {product.discount_percentage > 0 && (
+                          <span className="text-sm text-green-600 font-medium">{product.discount_percentage}% OFF</span>
+                        )}
+                      </div>
+
+                      <div className="text-xs text-green-600 font-bold mb-1">
+                        Llega gratis mañana
+                      </div>
+
+                      <div className="text-xs text-gray-500">
+                        en 36x $ {(product.price / 36).toLocaleString('es-CO', { maximumFractionDigits: 0 })}
+                      </div>
+
+                      {product.is_featured === 1 && (
+                        <div className="mt-2">
+                          <span className="bg-blue-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-sm uppercase tracking-wide">
+                            MÁS VENDIDO
+                          </span>
+                        </div>
+                      )}
+                      
+                      {product.stock <= 5 && product.stock > 0 && (
+                        <div className="mt-2">
+                          <span className="bg-orange-100 text-orange-800 text-[10px] font-bold px-1.5 py-0.5 rounded-sm">
+                            ¡Solo quedan {product.stock}!
+                          </span>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Categories Grid (Mercado Libre Style) */}
           <div className="mb-12">
             <h2 className="text-2xl text-gray-600 font-light mb-4">Categorías populares</h2>
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
-              {categories.map((cat, idx) => (
-                <div key={idx} className="bg-white rounded shadow-sm p-4 flex flex-col items-center justify-center gap-2 hover:shadow-md transition-shadow cursor-pointer h-32 text-center">
-                  <div className="text-primary">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.384-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
-                    </svg>
-                  </div>
-                  <span className="text-xs text-gray-600">{cat}</span>
-                </div>
-              ))}
+              {loadingCategories ? (
+                [1,2,3,4].map(i => (
+                    <div key={i} className="bg-white rounded shadow-sm p-4 h-32 animate-pulse"></div>
+                ))
+              ) : (
+                categories.map((cat) => (
+                    <Link key={cat.id} href={`/category/${cat.id}`} className="bg-white rounded shadow-sm p-4 flex flex-col items-center justify-center gap-2 hover:shadow-md transition-shadow cursor-pointer h-32 text-center group">
+                        <div className="text-primary group-hover:scale-110 transition-transform">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.384-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+                            </svg>
+                        </div>
+                        <span className="text-xs text-gray-600">{cat.name}</span>
+                    </Link>
+                ))
+              )}
             </div>
           </div>
         </div>
