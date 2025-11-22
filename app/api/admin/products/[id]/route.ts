@@ -8,10 +8,10 @@ import { nanoid } from 'nanoid';
 // GET: Obtener un producto por ID
 export async function GET(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const { id } = params;
+        const { id } = await params;
         
         // Verificar auth
         const authHeader = request.headers.get('Authorization');
@@ -35,10 +35,10 @@ export async function GET(
 // PUT: Actualizar un producto
 export async function PUT(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const { id } = params;
+        const { id } = await params;
 
         // 1. Verificar Auth y Rol Admin
         const authHeader = request.headers.get('Authorization');
@@ -110,10 +110,10 @@ export async function PUT(
 // DELETE: Eliminar producto (lógica o física)
 export async function DELETE(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const { id } = params;
+        const { id } = await params;
         // Verificar Auth...
         const authHeader = request.headers.get('Authorization');
         // ... (lógica auth igual a arriba)

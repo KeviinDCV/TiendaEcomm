@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Cookies from 'js-cookie';
 import Link from 'next/link';
+import CategorySelector from '../CategorySelector';
 
 const CATEGORIES = [
     'Equipos de Diagnóstico',
@@ -30,7 +31,7 @@ export default function CreateProductPage() {
         price: '',
         originalPrice: '',
         stock: '',
-        category: CATEGORIES[0],
+        category: '',
         isFeatured: false,
         image: null as File | null
     });

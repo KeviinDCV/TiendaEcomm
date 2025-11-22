@@ -4,6 +4,7 @@ import { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
 import Cookies from 'js-cookie';
 import Link from 'next/link';
+import CategorySelector from '../../CategorySelector';
 
 const CATEGORIES = [
     'Equipos de Diagnóstico',
@@ -18,8 +19,8 @@ const CATEGORIES = [
     'Diagnóstico'
 ];
 
-export default function EditProductPage({ params }: { params: Promise<{ id: string }> }) {
-    const { id } = use(params);
+export default function EditProductPage({ params }: { params: { id: string } }) {
+    const { id } = params;
     const router = useRouter();
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -39,7 +40,6 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
         currentImageUrl: ''
     });
 
-    // Cargar datos del producto
     useEffect(() => {
         const fetchProduct = async () => {
             try {
@@ -107,7 +107,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
             data.append('isFeatured', String(formData.isFeatured));
             data.append('isActive', String(formData.isActive));
             data.append('currentImageUrl', formData.currentImageUrl);
-            
+
             if (formData.image) {
                 data.append('image', formData.image);
             }
@@ -155,7 +155,6 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
             )}
 
             <form onSubmit={handleSubmit} className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 space-y-6">
-                
                 {/* Imagen Upload */}
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Imagen del Producto</label>
@@ -230,17 +229,10 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Categoría</label>
-                        <select 
+                        <CategorySelector 
                             value={formData.category}
-                            onChange={(e) => setFormData({...formData, category: e.target.value})}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
-                        >
-                            <option value="">Seleccionar...</option>
-                            {CATEGORIES.map(cat => (
-                                <option key={cat} value={cat}>{cat}</option>
-                            ))}
-                        </select>
+                            onChange={(value) => setFormData({...formData, category: value})}
+                        />
                     </div>
                 </div>
 
