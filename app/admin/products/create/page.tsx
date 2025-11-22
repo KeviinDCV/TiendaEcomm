@@ -6,19 +6,6 @@ import Cookies from 'js-cookie';
 import Link from 'next/link';
 import CategorySelector from '../CategorySelector';
 
-const CATEGORIES = [
-    'Equipos de Diagnóstico',
-    'Mobiliario Hospitalario',
-    'Instrumental Quirúrgico',
-    'Insumos Médicos',
-    'Ortopedia y Rehabilitación',
-    'Emergencias y Rescate',
-    'Laboratorio Clínico',
-    'Imagenología',
-    'Monitoreo',
-    'Diagnóstico'
-];
-
 export default function CreateProductPage() {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
@@ -189,16 +176,10 @@ export default function CreateProductPage() {
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Categoría</label>
-                        <select 
+                        <CategorySelector 
                             value={formData.category}
-                            onChange={(e) => setFormData({...formData, category: e.target.value})}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
-                        >
-                            {CATEGORIES.map(cat => (
-                                <option key={cat} value={cat}>{cat}</option>
-                            ))}
-                        </select>
+                            onChange={(value) => setFormData({...formData, category: value})}
+                        />
                     </div>
                 </div>
 
