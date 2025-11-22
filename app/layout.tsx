@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import AiAssistant from "./components/AiAssistant";
+import { AuthProvider } from "@/contexts/AuthContext";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -22,8 +23,10 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body className={`${inter.variable} antialiased bg-[hsl(210,20%,98%)] text-[hsl(210,15%,10%)]`}>
-        {children}
-        <AiAssistant />
+        <AuthProvider>
+          {children}
+          <AiAssistant />
+        </AuthProvider>
       </body>
     </html>
   );

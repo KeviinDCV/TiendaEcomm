@@ -2,16 +2,30 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function LoginPage() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
+    const router = useRouter();
+    const { login } = useAuth();
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        // Mock login logic
-        console.log('Login:', { email, password });
-        window.location.href = '/';
+        setError('');
+        setLoading(true);
+
+        const result = await login(email, password);
+
+        if (result.success) {
+            router.push('/');
+        } else {
+            setError(result.message);
+            setLoading(false);
+        }
     };
 
     return (
@@ -27,6 +41,12 @@ export default function LoginPage() {
             {/* Login Card */}
             <div className="bg-white p-8 rounded shadow-sm w-full max-w-[400px]">
                 <h1 className="text-2xl font-normal mb-6 text-gray-800">Iniciar sesión</h1>
+
+                {error && (
+                    <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded text-sm">
+                        {error}
+                    </div>
+                )}
 
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
@@ -63,9 +83,10 @@ export default function LoginPage() {
 
                     <button
                         type="submit"
-                        className="w-full bg-primary hover:bg-primary-dark text-white font-medium py-2.5 rounded shadow-sm transition-colors"
+                        disabled={loading}
+                        className="w-full bg-primary hover:bg-primary-dark text-white font-medium py-2.5 rounded shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                        Continuar
+                        {loading ? 'Iniciando sesión...' : 'Continuar'}
                     </button>
                 </form>
 

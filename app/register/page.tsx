@@ -2,22 +2,37 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function RegisterPage() {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
+    const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
+    const router = useRouter();
+    const { register } = useAuth();
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setError('');
+        
         if (password !== confirmPassword) {
-            alert('Las contraseñas no coinciden');
+            setError('Las contraseñas no coinciden');
             return;
         }
-        // Mock register logic
-        console.log('Register:', { name, email, password });
-        window.location.href = '/login';
+        
+        setLoading(true);
+        const result = await register(name, email, password);
+
+        if (result.success) {
+            router.push('/');
+        } else {
+            setError(result.message);
+            setLoading(false);
+        }
     };
 
     return (
@@ -33,6 +48,12 @@ export default function RegisterPage() {
             {/* Register Card */}
             <div className="bg-white p-8 rounded shadow-sm w-full max-w-[400px]">
                 <h1 className="text-2xl font-normal mb-6 text-gray-800">Crear cuenta</h1>
+
+                {error && (
+                    <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded text-sm">
+                        {error}
+                    </div>
+                )}
 
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
@@ -107,9 +128,10 @@ export default function RegisterPage() {
 
                     <button
                         type="submit"
-                        className="w-full bg-primary hover:bg-primary-dark text-white font-medium py-2.5 rounded shadow-sm transition-colors mt-2"
+                        disabled={loading}
+                        className="w-full bg-primary hover:bg-primary-dark text-white font-medium py-2.5 rounded shadow-sm transition-colors mt-2 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                        Continuar
+                        {loading ? 'Creando cuenta...' : 'Continuar'}
                     </button>
                 </form>
 

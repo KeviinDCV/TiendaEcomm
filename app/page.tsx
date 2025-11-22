@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useState, useEffect } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 
 import { products as featuredProducts, categories } from './data/products';
 import PaymentStrip from './components/PaymentStrip';
@@ -12,6 +13,8 @@ export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [department, setDepartment] = useState('Todos');
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [showUserMenu, setShowUserMenu] = useState(false);
+  const { user, logout } = useAuth();
 
   const slides = [
     {
@@ -95,10 +98,51 @@ export default function HomePage() {
 
           {/* Account & Orders */}
           <div className="flex items-center gap-2">
-            <Link href="/login" className="hidden md:flex flex-col text-xs cursor-pointer hover:bg-white/10 p-2 rounded leading-tight transition-colors">
-              <span className="text-gray-300">Hola, Identifícate</span>
-              <span className="font-bold">Cuenta y Listas</span>
-            </Link>
+            {user ? (
+              <div className="relative">
+                <button
+                  onClick={() => setShowUserMenu(!showUserMenu)}
+                  className="hidden md:flex flex-col text-xs cursor-pointer hover:bg-white/10 p-2 rounded leading-tight transition-colors"
+                >
+                  <span className="text-gray-300">Hola, {user.name.split(' ')[0]}</span>
+                  <span className="font-bold flex items-center gap-1">
+                    Cuenta y Listas
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </span>
+                </button>
+                {showUserMenu && (
+                  <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded shadow-lg border border-gray-200 py-2 z-50">
+                    <div className="px-4 py-2 border-b border-gray-100">
+                      <p className="text-sm font-medium text-gray-900">{user.name}</p>
+                      <p className="text-xs text-gray-500">{user.email}</p>
+                      <p className="text-xs text-primary font-semibold mt-1 capitalize">{user.role}</p>
+                    </div>
+                    <Link href="/" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                      Mi cuenta
+                    </Link>
+                    <Link href="/" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                      Mis pedidos
+                    </Link>
+                    <button
+                      onClick={() => {
+                        logout();
+                        setShowUserMenu(false);
+                      }}
+                      className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-50"
+                    >
+                      Cerrar sesión
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <Link href="/login" className="hidden md:flex flex-col text-xs cursor-pointer hover:bg-white/10 p-2 rounded leading-tight transition-colors">
+                <span className="text-gray-300">Hola, Identifícate</span>
+                <span className="font-bold">Cuenta y Listas</span>
+              </Link>
+            )}
 
             <div className="hidden md:flex flex-col text-xs cursor-pointer hover:bg-white/10 p-2 rounded leading-tight transition-colors">
               <span className="text-gray-300">Devoluciones</span>
