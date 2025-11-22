@@ -1,36 +1,97 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🛍️ E-commerce App - Plataforma Personalizable
 
-## Getting Started
+Una plataforma moderna de e-commerce construida con Next.js 14, TypeScript y Tailwind CSS.
 
-First, run the development server:
+## 🚀 Stack Tecnológico
+
+### Frontend
+- **Next.js 14+** - Framework React con SSR/SSG
+- **TypeScript** - Tipado estático
+- **Tailwind CSS 4** - Framework CSS utility-first
+- **React 19** - Biblioteca de UI
+
+### Backend (Por implementar)
+- **Next.js API Routes** - Backend API
+- **PostgreSQL + Prisma** - Base de datos y ORM
+- **NextAuth.js** - Autenticación
+- **Stripe** - Pagos
+
+## 🎯 Características Planificadas
+
+- ✅ Página de inicio "En desarrollo"
+- ⏳ Catálogo de productos
+- ⏳ Carrito de compras
+- ⏳ Sistema de autenticación
+- ⏳ Procesamiento de pagos
+- ⏳ Panel de administración
+- ⏳ Gestión de inventario
+- ⏳ Sistema de órdenes
+- ⏳ Dashboard de analytics
+
+## 🛠️ Instalación y Desarrollo
 
 ```bash
+# Instalar dependencias
+npm install
+
+# Ejecutar en modo desarrollo
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+
+# Compilar para producción
+npm run build
+
+# Ejecutar en producción
+npm start
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+El servidor de desarrollo estará disponible en [http://localhost:3000](http://localhost:3000)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 📁 Estructura del Proyecto
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+ecommerce-app/
+├── app/                    # App Router de Next.js
+│   ├── globals.css        # Estilos globales
+│   ├── layout.tsx         # Layout principal
+│   └── page.tsx           # Página de inicio
+├── public/                # Archivos estáticos
+├── node_modules/          # Dependencias
+└── package.json           # Configuración del proyecto
+```
 
-## Learn More
+## 🎨 Diseño
 
-To learn more about Next.js, take a look at the following resources:
+La aplicación utiliza un diseño moderno con:
+- Gradientes animados
+- Efectos glassmorphism
+- Animaciones suaves
+- Diseño responsive
+- Dark mode por defecto
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 📦 Próximos Pasos
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. **Configurar base de datos**: Instalar y configurar PostgreSQL + Prisma
+2. **Crear modelos**: Definir esquemas para productos, usuarios, órdenes, etc.
+3. **Implementar autenticación**: Configurar NextAuth.js
+4. **Diseñar componentes**: Crear componentes reutilizables (ProductCard, Navbar, etc.)
+5. **Construir páginas principales**: Home, Productos, Carrito, Checkout
+6. **Integrar pagos**: Configurar Stripe
+7. **Panel admin**: Dashboard para gestión de productos
 
-## Deploy on Vercel
+## 🔧 Personalización
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+El proyecto está configurado para ser totalmente personalizable:
+- Variables CSS en `globals.css` para colores y temas
+- Componentes modulares y reutilizables
+- Tailwind CSS para estilos flexibles
+- TypeScript para type-safety
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 📝 Notas
+
+- Este es un proyecto en desarrollo inicial
+- La página actual es un placeholder "En desarrollo"
+- Listo para comenzar a construir las funcionalidades principales
+
+---
+
+**Desarrollado con ❤️ usando Next.js**
