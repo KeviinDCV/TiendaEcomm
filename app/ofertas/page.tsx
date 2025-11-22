@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import PaymentStrip from '../components/PaymentStrip';
+import Navbar from '../components/Navbar';
 
 interface Product {
   id: number;
@@ -42,17 +43,7 @@ export default function OfertasPage() {
 
   return (
     <div className="min-h-screen bg-[#EBEBEB] font-sans text-sm text-foreground">
-      {/* Header Simple */}
-      <header className="bg-foreground text-white sticky top-0 z-50 shadow-md">
-        <div className="container-fluid h-16 flex items-center gap-4">
-          <Link href="/" className="flex items-center gap-1 cursor-pointer hover:bg-white/10 p-2 rounded transition-colors">
-            <div className="font-bold text-2xl tracking-tight">HUV</div>
-            <div className="text-xs mt-1 text-primary font-bold">Medical</div>
-          </Link>
-          <div className="h-6 w-px bg-gray-700 mx-2"></div>
-          <h1 className="text-xl font-medium">Ofertas del Día</h1>
-        </div>
-      </header>
+      <Navbar />
 
       <main className="pb-12">
         {/* Banner Ofertas */}
@@ -96,10 +87,10 @@ export default function OfertasPage() {
             ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                     {products.map((product) => (
-                        <div key={product.id} className="bg-white rounded-md shadow-sm hover:shadow-lg transition-shadow cursor-pointer flex flex-col group">
+                        <div key={product.id} className="bg-white rounded-md shadow-sm hover:shadow-lg transition-shadow cursor-pointer flex flex-col">
                             <div className="h-56 border-b border-gray-50 p-4 flex items-center justify-center relative">
                                 {product.image_url ? (
-                                    <img src={product.image_url} alt={product.name} className="max-h-full max-w-full object-contain mix-blend-multiply group-hover:scale-105 transition-transform duration-300" />
+                                    <img src={product.image_url} alt={product.name} className="max-h-full max-w-full object-contain mix-blend-multiply" />
                                 ) : (
                                     <div className="flex items-center justify-center h-full w-full bg-gray-100">
                                         <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
