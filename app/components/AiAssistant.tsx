@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 import { products } from '../data/products';
 
 type Message = {
@@ -10,10 +11,17 @@ type Message = {
 };
 
 export default function AiAssistant() {
+    const pathname = usePathname();
     const [isOpen, setIsOpen] = useState(false);
     const [messages, setMessages] = useState<Message[]>([
         { id: 1, text: '¡Hola! Soy el asistente inteligente de HUV. Puedo ayudarte a buscar productos, consultar precios o resolver dudas sobre envíos. ¿Qué necesitas hoy?', sender: 'bot' }
     ]);
+
+    // No mostrar el chatbot en rutas administrativas
+    if (pathname?.startsWith('/admin')) {
+        return null;
+    }
+
     const [inputValue, setInputValue] = useState('');
     const [isTyping, setIsTyping] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);

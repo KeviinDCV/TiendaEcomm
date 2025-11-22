@@ -114,12 +114,25 @@ export default function HomePage() {
                 </button>
                 {showUserMenu && (
                   <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded shadow-lg border border-gray-200 py-2 z-50">
-                    <div className="px-4 py-2 border-b border-gray-100">
-                      <p className="text-sm font-medium text-gray-900">{user.name}</p>
-                      <p className="text-xs text-gray-500">{user.email}</p>
-                      <p className="text-xs text-primary font-semibold mt-1 capitalize">{user.role}</p>
+                    <div className="px-4 py-3 border-b border-gray-100 bg-gray-50">
+                      <p className="text-xs text-gray-500">Conectado como</p>
+                      <p className="text-sm font-bold text-gray-800 truncate">{user.name}</p>
+                      <p className="text-xs text-gray-500 truncate">{user.email}</p>
                     </div>
-                    <Link href="/" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                    
+                    {user.role === 'administrador' && (
+                      <Link 
+                        href="/admin/dashboard" 
+                        className="block px-4 py-2 text-sm text-primary hover:bg-gray-50 font-medium border-b border-gray-100"
+                        onClick={() => setShowUserMenu(false)}
+                      >
+                        ⚡ Panel Administrativo
+                      </Link>
+                    )}
+
+                    <Link 
+                      href="/profile" 
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
                       Mi cuenta
                     </Link>
                     <Link href="/" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
