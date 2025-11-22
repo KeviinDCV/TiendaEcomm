@@ -1,8 +1,15 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { query } from '@/lib/db';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
     try {
+        const { searchParams } = new URL(request.url);
+        const limitParam = searchParams.get('limit');
+        const limit = limitParam ? parseInt(limitParam) : 20;
+        
+        // Si limit es -1, traemos todos (o un número muy grande)
+        const limitClause = limit === -1 ? 'LIMIT 1000' : `LIMIT ${limit}`;
+
         // Obtener productos activos que tienen precio original (están en descuento)
         const products = await query(`
             SELECT 
@@ -21,7 +28,7 @@ export async function GET() {
             AND original_price IS NOT NULL 
             AND original_price > price
             ORDER BY discount_percentage DESC, created_at DESC
-            LIMIT 20
+            ${limitClause}
         `);
 
         return NextResponse.json({ 

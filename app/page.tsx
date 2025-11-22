@@ -37,6 +37,7 @@ export default function HomePage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loadingProducts, setLoadingProducts] = useState(true);
   const categoryDropdownRef = useRef<HTMLDivElement>(null);
+  const ofertasRef = useRef<HTMLDivElement>(null);
   
   const { user, logout } = useAuth();
 
@@ -119,6 +120,18 @@ export default function HomePage() {
 
     return () => clearInterval(interval);
   }, [slides.length]);
+
+  const scrollOfertas = (direction: 'left' | 'right') => {
+    if (ofertasRef.current) {
+        const { current } = ofertasRef;
+        const scrollAmount = 300; // Ancho aproximado de una card + gap
+        if (direction === 'left') {
+            current.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+        } else {
+            current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+        }
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background font-sans text-sm text-foreground">
@@ -384,11 +397,35 @@ export default function HomePage() {
           </div>
 
           {/* Ofertas Section */}
-          <div className="mb-8">
-            <div className="flex items-end gap-4 mb-4">
+          <div className="mb-8 relative group/ofertas">
+            <div className="flex items-end gap-4 mb-4 px-1">
               <h2 className="text-2xl text-gray-600 font-light">Ofertas</h2>
-              <a href="#" className="text-primary text-sm hover:underline mb-1">Ver todas</a>
+              <Link href="/ofertas" className="text-primary text-sm hover:underline mb-1">Ver todas</Link>
             </div>
+
+            {/* Navigation Buttons */}
+            {!loadingProducts && products.length > 4 && (
+                <>
+                    <button 
+                        onClick={() => scrollOfertas('left')}
+                        className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-20 bg-white shadow-lg border border-gray-100 rounded-full p-2 text-gray-600 opacity-0 group-hover/ofertas:opacity-100 transition-all hover:scale-110 hover:bg-gray-50 hidden md:block"
+                        aria-label="Anterior oferta"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                        </svg>
+                    </button>
+                    <button 
+                        onClick={() => scrollOfertas('right')}
+                        className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-20 bg-white shadow-lg border border-gray-100 rounded-full p-2 text-gray-600 opacity-0 group-hover/ofertas:opacity-100 transition-all hover:scale-110 hover:bg-gray-50 hidden md:block"
+                        aria-label="Siguiente oferta"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                    </button>
+                </>
+            )}
 
             {loadingProducts ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
@@ -412,9 +449,12 @@ export default function HomePage() {
                 <p className="text-gray-500">Por el momento no tenemos productos con descuento disponibles.</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+              <div 
+                ref={ofertasRef}
+                className="flex gap-4 overflow-x-auto pb-4 hide-scrollbar scroll-smooth snap-x snap-mandatory"
+              >
                 {products.map((product) => (
-                  <div key={product.id} className="bg-white rounded-md shadow-sm hover:shadow-lg transition-shadow cursor-pointer flex flex-col">
+                  <div key={product.id} className="min-w-[280px] max-w-[280px] md:min-w-[260px] md:max-w-[260px] bg-white rounded-md shadow-sm hover:shadow-lg transition-shadow cursor-pointer flex flex-col snap-start">
                     <div className="h-48 border-b border-gray-50 p-4 flex items-center justify-center relative">
                       {product.image_url ? (
                         <img src={product.image_url} alt={product.name} className="max-h-full max-w-full object-contain mix-blend-multiply" />
