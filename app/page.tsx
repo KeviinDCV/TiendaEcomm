@@ -15,19 +15,19 @@ export default function HomePage() {
 
   const slides = [
     {
-      image: 'https://images.unsplash.com/photo-1516549655169-df83a0774514?w=1600&h=600&fit=crop',
+      image: 'https://images.unsplash.com/photo-1516549655169-df83a0774514?w=1600',
       title: 'TECNOLOGÍA MÉDICA',
       subtitle: 'Equipa tu hospital con lo mejor',
       buttonText: 'Ver Ofertas'
     },
     {
-      image: 'https://images.unsplash.com/photo-1581595220975-119360b1a2cf?w=1600&h=600&fit=crop',
+      image: 'https://images.unsplash.com/photo-1631549916768-4119b2e5f926?w=1600',
       title: 'EQUIPOS DE DIAGNÓSTICO',
       subtitle: 'Precisión y confiabilidad garantizadas',
       buttonText: 'Explorar Catálogo'
     },
     {
-      image: 'https://images.unsplash.com/photo-1579684385127-1ef15d508118?w=1600&h=600&fit=crop',
+      image: 'https://images.unsplash.com/photo-1579684385127-1ef15d508118?w=1600',
       title: 'OFERTAS ESPECIALES',
       subtitle: 'Hasta 20% de descuento en equipos seleccionados',
       buttonText: 'Ver Promociones'

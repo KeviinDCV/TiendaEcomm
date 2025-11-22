@@ -10,8 +10,30 @@ const nextConfig: NextConfig = {
         hostname: 'images.unsplash.com',
       },
     ],
+    formats: ['image/avif', 'image/webp'],
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
   },
   async headers() {
+    // In development, don't apply strict CSP to avoid console errors
+    if (isDev) {
+      return [
+        {
+          source: '/:path*',
+          headers: [
+            {
+              key: 'Cross-Origin-Resource-Policy',
+              value: 'cross-origin'
+            },
+            {
+              key: 'Cross-Origin-Embedder-Policy',
+              value: 'unsafe-none'
+            }
+          ],
+        },
+      ];
+    }
+
+    // In production, apply strict security headers
     return [
       {
         source: '/:path*',
@@ -20,13 +42,11 @@ const nextConfig: NextConfig = {
             key: 'Content-Security-Policy',
             value: [
               "default-src 'self'",
-              // Allow unsafe-eval in development for Next.js HMR, remove in production
-              `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ''}`,
+              "script-src 'self' 'unsafe-inline'",
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' https://images.unsplash.com data: blob:",
               "font-src 'self' data:",
-              // Allow localhost connections in development for HMR
-              `connect-src 'self'${isDev ? ' ws://localhost:* ws://127.0.0.1:* http://localhost:* http://127.0.0.1:*' : ''}`,
+              "connect-src 'self'",
               "frame-ancestors 'none'",
               "base-uri 'self'",
               "form-action 'self'"
