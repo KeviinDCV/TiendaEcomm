@@ -8,11 +8,6 @@ import PaymentStrip from './components/PaymentStrip';
 import Navbar from './components/Navbar';
 import ProductSection from './components/ProductSection';
 
-interface Category {
-  id: number;
-  name: string;
-}
-
 interface Product {
   id: number;
   name: string;
@@ -45,8 +40,6 @@ interface Section {
 
 export default function HomePage() {
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [loadingCategories, setLoadingCategories] = useState(true);
   const [products, setProducts] = useState<Product[]>([]);
   const [loadingProducts, setLoadingProducts] = useState(true);
   const [banners, setBanners] = useState<Banner[]>([]);
@@ -56,20 +49,6 @@ export default function HomePage() {
   const ofertasRef = useRef<HTMLDivElement>(null);
   
   useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const res = await fetch('/api/categories');
-        const data = await res.json();
-        if (data.success) {
-          setCategories(data.categories);
-        }
-      } catch (error) {
-        console.error('Error loading categories', error);
-      } finally {
-        setLoadingCategories(false);
-      }
-    };
-
     const fetchBanners = async () => {
         try {
             const res = await fetch('/api/banners');
@@ -98,7 +77,6 @@ export default function HomePage() {
         }
     };
 
-    fetchCategories();
     fetchBanners();
     fetchSections();
   }, []);
@@ -393,29 +371,6 @@ export default function HomePage() {
                   config={section.config} 
               />
           ))}
-
-          {/* Categories Grid (Mercado Libre Style) */}
-          <div className="mb-12">
-            <h2 className="text-2xl text-gray-600 font-light mb-4">Categorías populares</h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
-              {loadingCategories ? (
-                [1,2,3,4].map(i => (
-                    <div key={i} className="bg-white rounded shadow-sm p-4 h-32 animate-pulse"></div>
-                ))
-              ) : (
-                categories.map((cat) => (
-                    <Link key={cat.id} href={`/category/${cat.id}`} className="bg-white rounded shadow-sm p-4 flex flex-col items-center justify-center gap-2 hover:shadow-md transition-shadow cursor-pointer h-32 text-center group">
-                        <div className="text-primary group-hover:scale-110 transition-transform">
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.384-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
-                            </svg>
-                        </div>
-                        <span className="text-xs text-gray-600">{cat.name}</span>
-                    </Link>
-                ))
-              )}
-            </div>
-          </div>
         </div>
       </main>
 
