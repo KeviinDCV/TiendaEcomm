@@ -198,12 +198,12 @@ export default function ProductPage() {
                             <div className="mb-6">
                                 {product.original_price && (
                                     <div className="text-[rgba(0,0,0,.45)] line-through text-xs mb-1">
-                                        ${product.original_price.toLocaleString('es-CO')}
+                                        ${product.original_price.toLocaleString('es-CO', { maximumFractionDigits: 0 })}
                                     </div>
                                 )}
                                 <div className="flex items-start gap-2">
                                     <span className="text-[36px] font-light text-[rgba(0,0,0,.9)] leading-none">
-                                        ${product.price.toLocaleString('es-CO')}
+                                        ${product.price.toLocaleString('es-CO', { maximumFractionDigits: 0 })}
                                     </span>
                                     {product.discount_percentage > 0 && (
                                         <span className="text-[#00a650] text-[18px] font-medium">

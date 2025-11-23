@@ -7,6 +7,7 @@ import { useState, useEffect, useRef } from 'react';
 import PaymentStrip from './components/PaymentStrip';
 import Navbar from './components/Navbar';
 import ProductSection from './components/ProductSection';
+import ProductCard from './components/ProductCard';
 
 interface Product {
   id: number;
@@ -295,68 +296,11 @@ export default function HomePage() {
             ) : (
               <div 
                 ref={ofertasRef}
-                className="flex gap-4 overflow-x-auto pb-4 hide-scrollbar scroll-smooth snap-x snap-mandatory"
+                className="flex gap-4 overflow-x-auto pb-8 pt-2 hide-scrollbar scroll-smooth snap-x snap-mandatory px-1"
               >
                 {products.map((product) => (
-                  <div key={product.id} className="min-w-[280px] max-w-[280px] md:min-w-[260px] md:max-w-[260px] bg-white rounded-md shadow-sm hover:shadow-lg transition-shadow cursor-pointer flex flex-col snap-start">
-                    <div className="h-48 border-b border-gray-50 p-4 flex items-center justify-center relative">
-                      {product.image_url ? (
-                        <img src={product.image_url} alt={product.name} className="max-h-full max-w-full object-contain mix-blend-multiply" />
-                      ) : (
-                        <div className="flex items-center justify-center h-full w-full bg-gray-100">
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                          </svg>
-                        </div>
-                      )}
-                      <div className="absolute top-2 right-2 bg-white rounded-full p-1 shadow-sm text-primary hover:bg-blue-50 transition-colors">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                        </svg>
-                      </div>
-                    </div>
-                    <div className="p-4 flex-1 flex flex-col">
-                      <h3 className="text-gray-900 text-sm font-light line-clamp-2 mb-2 h-10">
-                        {product.name}
-                      </h3>
-
-                      {product.original_price && (
-                        <div className="mb-1">
-                          <span className="text-xs text-gray-400 line-through">${product.original_price.toLocaleString('es-CO')}</span>
-                        </div>
-                      )}
-
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="text-2xl text-gray-900 font-normal">${product.price.toLocaleString('es-CO')}</span>
-                        {product.discount_percentage > 0 && (
-                          <span className="text-sm text-green-600 font-medium">{product.discount_percentage}% OFF</span>
-                        )}
-                      </div>
-
-                      <div className="text-xs text-green-600 font-bold mb-1">
-                        Llega gratis mañana
-                      </div>
-
-                      <div className="text-xs text-gray-500">
-                        en 36x $ {(product.price / 36).toLocaleString('es-CO', { maximumFractionDigits: 0 })}
-                      </div>
-
-                      {product.is_featured === 1 && (
-                        <div className="mt-2">
-                          <span className="bg-blue-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-sm uppercase tracking-wide">
-                            MÁS VENDIDO
-                          </span>
-                        </div>
-                      )}
-                      
-                      {product.stock <= 5 && product.stock > 0 && (
-                        <div className="mt-2">
-                          <span className="bg-orange-100 text-orange-800 text-[10px] font-bold px-1.5 py-0.5 rounded-sm">
-                            ¡Solo quedan {product.stock}!
-                          </span>
-                        </div>
-                      )}
-                    </div>
+                  <div key={product.id} className="min-w-[200px] max-w-[200px] md:min-w-[220px] md:max-w-[220px] snap-start h-[260px]">
+                    <ProductCard product={product} />
                   </div>
                 ))}
               </div>

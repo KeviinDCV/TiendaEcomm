@@ -64,10 +64,10 @@ export default function CartPage() {
                                                 </Link>
                                             </h3>
                                             <p className="text-lg font-bold text-gray-900 whitespace-nowrap ml-4">
-                                                ${(item.price * item.quantity).toLocaleString('es-CO')}
+                                                ${(item.price * item.quantity).toLocaleString('es-CO', { maximumFractionDigits: 0 })}
                                             </p>
                                         </div>
-                                        <p className="text-sm text-gray-500 mb-4">Precio unitario: ${item.price.toLocaleString('es-CO')}</p>
+                                        <p className="text-sm text-gray-500 mb-4">Precio unitario: ${item.price.toLocaleString('es-CO', { maximumFractionDigits: 0 })}</p>
                                         
                                         <div className="flex items-center justify-between">
                                             <div className="flex items-center border border-gray-300 rounded-lg h-9">
@@ -117,7 +117,7 @@ export default function CartPage() {
                             <div className="space-y-3 mb-6">
                                 <div className="flex justify-between text-gray-600">
                                     <span>Subtotal ({items.reduce((acc, i) => acc + i.quantity, 0)} productos)</span>
-                                    <span>${cartTotal.toLocaleString('es-CO')}</span>
+                                    <span>${cartTotal.toLocaleString('es-CO', { maximumFractionDigits: 0 })}</span>
                                 </div>
                                 <div className="flex justify-between text-gray-600">
                                     <span>Envío</span>
@@ -125,7 +125,7 @@ export default function CartPage() {
                                 </div>
                                 <div className="border-t border-gray-100 pt-3 flex justify-between font-bold text-xl text-gray-900">
                                     <span>Total</span>
-                                    <span>${cartTotal.toLocaleString('es-CO')}</span>
+                                    <span>${cartTotal.toLocaleString('es-CO', { maximumFractionDigits: 0 })}</span>
                                 </div>
                             </div>
 

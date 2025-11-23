@@ -74,7 +74,7 @@ export default function AiAssistant() {
             );
 
             if (foundProduct) {
-                return `El **${foundProduct.name}** tiene un precio de **$${foundProduct.price.toLocaleString('es-ES')}**. \n\n${foundProduct.description}\n\n¿Te gustaría agregarlo al carrito?`;
+                return `El **${foundProduct.name}** tiene un precio de **$${foundProduct.price.toLocaleString('es-CO', { maximumFractionDigits: 0 })}**. \n\n${foundProduct.description}\n\n¿Te gustaría agregarlo al carrito?`;
             }
 
             if (lowerQuery.includes('monitor')) return "Tenemos el Monitor HUV-2000 disponible. ¿Quieres ver sus detalles?";

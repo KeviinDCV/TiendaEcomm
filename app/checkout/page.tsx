@@ -171,7 +171,7 @@ export default function CheckoutPage() {
 
                                         <div className="pt-4">
                                             <button type="submit" className="w-full bg-green-600 text-white py-3 rounded-lg font-bold hover:bg-green-700 transition-colors shadow-md">
-                                                Pagar ${cartTotal.toLocaleString('es-CO')}
+                                                Pagar ${cartTotal.toLocaleString('es-CO', { maximumFractionDigits: 0 })}
                                             </button>
                                         </div>
                                     </form>
@@ -193,14 +193,14 @@ export default function CheckoutPage() {
                                                 <p className="font-medium text-gray-800 line-clamp-1">{item.name}</p>
                                                 <p className="text-gray-500">Cant: {item.quantity}</p>
                                             </div>
-                                            <p className="font-medium text-gray-900">${(item.price * item.quantity).toLocaleString('es-CO')}</p>
+                                            <p className="font-medium text-gray-900">${(item.price * item.quantity).toLocaleString('es-CO', { maximumFractionDigits: 0 })}</p>
                                         </div>
                                     ))}
                                 </div>
                                 <div className="border-t border-gray-100 pt-4 space-y-2">
                                     <div className="flex justify-between text-gray-600">
                                         <span>Subtotal</span>
-                                        <span>${cartTotal.toLocaleString('es-CO')}</span>
+                                        <span>${cartTotal.toLocaleString('es-CO', { maximumFractionDigits: 0 })}</span>
                                     </div>
                                     <div className="flex justify-between text-gray-600">
                                         <span>Envío</span>
@@ -208,7 +208,7 @@ export default function CheckoutPage() {
                                     </div>
                                     <div className="flex justify-between font-bold text-xl text-gray-900 pt-2 border-t border-gray-100">
                                         <span>Total</span>
-                                        <span>${cartTotal.toLocaleString('es-CO')}</span>
+                                        <span>${cartTotal.toLocaleString('es-CO', { maximumFractionDigits: 0 })}</span>
                                     </div>
                                 </div>
                             </div>
