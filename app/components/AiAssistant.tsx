@@ -33,6 +33,19 @@ export default function AiAssistant() {
         return null;
     }
 
+    const toggleOpen = () => {
+        // @ts-ignore - View Transitions API is new
+        if (!document.startViewTransition) {
+            setIsOpen(prev => !prev);
+            return;
+        }
+
+        // @ts-ignore
+        document.startViewTransition(() => {
+            setIsOpen(prev => !prev);
+        });
+    };
+
     const renderMessageText = (text: string) => {
         const parts = text.split(/(\*\*.*?\*\*)/g);
         return parts.map((part, index) => {
@@ -210,10 +223,11 @@ export default function AiAssistant() {
 
             {/* Floating Button */}
             <button
-                onClick={() => setIsOpen(!isOpen)}
+                onClick={() => toggleOpen()}
                 className={`${isOpen ? 'bg-gray-600 rotate-90' : 'bg-primary hover:bg-primary-dark'
                     } text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 flex items-center justify-center z-50`}
                 aria-label="Abrir asistente"
+                style={{ viewTransitionName: 'chatbot-button' } as React.CSSProperties}
             >
                 {isOpen ? (
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">

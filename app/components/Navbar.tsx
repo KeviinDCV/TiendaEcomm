@@ -1,8 +1,10 @@
 'use client';
 
 import Link from 'next/link';
+import TransitionLink from './TransitionLink';
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useCart } from '@/contexts/CartContext';
 
 interface Category {
   id: number;
@@ -10,7 +12,7 @@ interface Category {
 }
 
 export default function Navbar() {
-  const [cartCount, setCartCount] = useState(3);
+  const { cartCount } = useCart();
   const [searchQuery, setSearchQuery] = useState('');
   const [department, setDepartment] = useState('Todos');
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -18,8 +20,35 @@ export default function Navbar() {
   const [loadingCategories, setLoadingCategories] = useState(true);
   const [showAllCategories, setShowAllCategories] = useState(false);
   const categoryDropdownRef = useRef<HTMLDivElement>(null);
+  const userDropdownRef = useRef<HTMLDivElement>(null);
   
   const { user, logout } = useAuth();
+
+  const toggleUserMenu = () => {
+      // @ts-ignore - View Transitions API is new
+      if (!document.startViewTransition) {
+          setShowUserMenu(prev => !prev);
+          return;
+      }
+
+      // @ts-ignore
+      document.startViewTransition(() => {
+          setShowUserMenu(prev => !prev);
+      });
+  };
+
+  const toggleCategories = () => {
+      // @ts-ignore - View Transitions API is new
+      if (!document.startViewTransition) {
+          setShowAllCategories(prev => !prev);
+          return;
+      }
+
+      // @ts-ignore
+      document.startViewTransition(() => {
+          setShowAllCategories(prev => !prev);
+      });
+  };
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -44,6 +73,9 @@ export default function Navbar() {
     const handleClickOutside = (event: MouseEvent) => {
       if (categoryDropdownRef.current && !categoryDropdownRef.current.contains(event.target as Node)) {
         setShowAllCategories(false);
+      }
+      if (userDropdownRef.current && !userDropdownRef.current.contains(event.target as Node)) {
+        setShowUserMenu(false);
       }
     };
 
@@ -104,9 +136,9 @@ export default function Navbar() {
         {/* Account & Orders */}
         <div className="flex items-center gap-2">
           {user ? (
-            <div className="relative">
+            <div className="relative" ref={userDropdownRef}>
               <button
-                onClick={() => setShowUserMenu(!showUserMenu)}
+                onClick={toggleUserMenu}
                 className="hidden md:flex flex-col text-xs cursor-pointer hover:bg-white/10 p-2 rounded leading-tight transition-colors"
               >
                 <span className="text-gray-300">Hola, {user.name.split(' ')[0]}</span>
@@ -118,7 +150,10 @@ export default function Navbar() {
                 </span>
               </button>
               {showUserMenu && (
-                <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded shadow-lg border border-gray-200 py-2 z-50">
+                <div 
+                  className="absolute right-0 top-full mt-2 w-48 bg-white rounded shadow-lg border border-gray-200 py-2 z-50"
+                  style={{ viewTransitionName: 'user-dropdown' } as React.CSSProperties}
+                >
                   <div className="px-4 py-3 border-b border-gray-100 bg-gray-50">
                     <p className="text-xs text-gray-500">Conectado como</p>
                     <p className="text-sm font-bold text-gray-800 truncate">{user.name}</p>
@@ -126,13 +161,13 @@ export default function Navbar() {
                   </div>
                   
                   {user.role === 'administrador' && (
-                    <Link 
+                    <TransitionLink 
                       href="/admin/dashboard" 
                       className="block px-4 py-2 text-sm text-primary hover:bg-gray-50 font-medium border-b border-gray-100"
                       onClick={() => setShowUserMenu(false)}
                     >
                       ⚡ Panel Administrativo
-                    </Link>
+                    </TransitionLink>
                   )}
 
                   {user.role !== 'administrador' && (
@@ -160,10 +195,10 @@ export default function Navbar() {
               )}
             </div>
           ) : (
-            <Link href="/login" className="hidden md:flex flex-col text-xs cursor-pointer hover:bg-white/10 p-2 rounded leading-tight transition-colors">
+            <TransitionLink href="/login" className="hidden md:flex flex-col text-xs cursor-pointer hover:bg-white/10 p-2 rounded leading-tight transition-colors">
               <span className="text-gray-300">Hola, Identifícate</span>
               <span className="font-bold">Cuenta y Listas</span>
-            </Link>
+            </TransitionLink>
           )}
 
           <div className="hidden md:flex flex-col text-xs cursor-pointer hover:bg-white/10 p-2 rounded leading-tight transition-colors">
@@ -172,13 +207,13 @@ export default function Navbar() {
           </div>
 
           {/* Cart */}
-          <div className="flex items-end cursor-pointer hover:bg-white/10 p-2 rounded relative transition-colors">
+          <Link href="/cart" className="flex items-end cursor-pointer hover:bg-white/10 p-2 rounded relative transition-colors">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
             </svg>
             <span className="font-bold text-primary text-lg leading-none mb-3">{cartCount}</span>
             <span className="font-bold text-xs mb-1 ml-1 hidden md:inline">Carrito</span>
-          </div>
+          </Link>
         </div>
       </div>
 
@@ -186,7 +221,7 @@ export default function Navbar() {
       <div className="bg-gray-800 h-10 flex items-center px-4 text-sm gap-6 overflow-visible relative">
         <div ref={categoryDropdownRef} className="relative">
           <button 
-              onClick={() => setShowAllCategories(!showAllCategories)}
+              onClick={toggleCategories}
               className="flex items-center gap-1 font-bold hover:bg-white/10 px-2 py-1 rounded transition-colors"
           >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -197,24 +232,29 @@ export default function Navbar() {
 
           {/* Dropdown Menu */}
           {showAllCategories && (
-              <div className="absolute top-full left-0 mt-1 w-64 bg-white text-gray-800 shadow-xl rounded-md border border-gray-200 py-2 z-50 animate-in fade-in zoom-in-95 duration-100">
+              <div 
+                className="absolute top-full left-0 mt-1 bg-white text-gray-800 shadow-xl rounded-md border border-gray-200 py-2 z-50 min-w-[250px]"
+                style={{ viewTransitionName: 'category-dropdown' } as React.CSSProperties}
+              >
                   <div className="px-4 py-2 bg-gray-50 border-b border-gray-100 mb-2">
                       <h3 className="font-bold text-lg">Categorías</h3>
                   </div>
-                  <div className="max-h-[400px] overflow-y-auto">
+                  <div className="p-2">
                       {loadingCategories ? (
                           <div className="px-4 py-2 text-gray-500">Cargando...</div>
                       ) : categories.length > 0 ? (
-                          categories.map((cat) => (
-                              <Link 
-                                  key={cat.id} 
-                                  href={`/category/${cat.id}`}
-                                  className="block px-4 py-2 hover:bg-gray-100 transition-colors"
-                                  onClick={() => setShowAllCategories(false)}
-                              >
-                                  {cat.name}
-                              </Link>
-                          ))
+                          <div className="grid grid-flow-col grid-rows-5 gap-x-8 gap-y-1 auto-cols-max">
+                              {categories.map((cat) => (
+                                  <Link 
+                                      key={cat.id} 
+                                      href={`/category/${cat.id}`}
+                                      className="block px-4 py-2 hover:bg-gray-100 transition-colors rounded-md whitespace-nowrap"
+                                      onClick={() => setShowAllCategories(false)}
+                                  >
+                                      {cat.name}
+                                  </Link>
+                              ))}
+                          </div>
                       ) : (
                           <div className="px-4 py-2 text-gray-500">No hay categorías</div>
                       )}

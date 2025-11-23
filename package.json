@@ -6,9 +6,12 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "email": "email dev"
   },
   "dependencies": {
+    "@react-email/components": "^1.0.1",
+    "@react-email/render": "^2.0.0",
     "bcryptjs": "^3.0.3",
     "js-cookie": "^3.0.5",
     "jsonwebtoken": "^9.0.2",
@@ -17,6 +20,7 @@
     "next": "16.0.3",
     "react": "19.2.0",
     "react-dom": "19.2.0",
+    "resend": "^6.5.2",
     "zod": "^4.1.12"
   },
   "devDependencies": {
@@ -29,6 +33,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.0.3",
+    "react-email": "^5.0.5",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

@@ -7,8 +7,8 @@ import { UserResponse } from '@/lib/types';
 interface AuthContextType {
     user: UserResponse | null;
     loading: boolean;
-    login: (email: string, password: string) => Promise<{ success: boolean; message: string }>;
-    register: (name: string, email: string, password: string) => Promise<{ success: boolean; message: string }>;
+    login: (email: string, password: string) => Promise<{ success: boolean; message: string; requiresVerification?: boolean; email?: string }>;
+    register: (name: string, email: string, password: string) => Promise<{ success: boolean; message: string; requiresVerification?: boolean; email?: string }>;
     logout: () => void;
 }
 
@@ -69,7 +69,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 setUser(data.user);
                 return { success: true, message: data.message };
             } else {
-                return { success: false, message: data.message };
+                return { 
+                    success: false, 
+                    message: data.message,
+                    requiresVerification: data.requiresVerification,
+                    email: data.email
+                };
             }
         } catch (error) {
             console.error('Error en login:', error);
@@ -87,10 +92,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
             const data = await response.json();
 
-            if (data.success && data.token) {
-                // Guardar token en cookie (7 días)
-                Cookies.set('auth_token', data.token, { expires: 7 });
-                setUser(data.user);
+            if (data.success) {
+                // Si requiere verificación, no guardar token ni usuario
+                if (data.requiresVerification) {
+                    return { 
+                        success: true, 
+                        message: data.message,
+                        requiresVerification: true,
+                        email: data.email
+                    };
+                }
+                // Si no requiere verificación y hay token
+                if (data.token) {
+                    Cookies.set('auth_token', data.token, { expires: 7 });
+                    setUser(data.user);
+                }
                 return { success: true, message: data.message };
             } else {
                 return { success: false, message: data.message };

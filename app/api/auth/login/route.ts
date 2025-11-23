@@ -80,6 +80,28 @@ export async function POST(request: NextRequest) {
             );
         }
 
+        // 4.5 VERIFICAR SI LA CUENTA ESTÁ VERIFICADA
+        if (!(user as any).is_verified) {
+            await logAuditEvent({
+                userId: user.id,
+                eventType: 'login_failed',
+                ipAddress,
+                userAgent,
+                metadata: { reason: 'Email not verified' },
+                success: false,
+            });
+
+            return NextResponse.json<AuthResponse>(
+                { 
+                    success: false, 
+                    message: 'Tu cuenta no ha sido verificada. Revisa tu correo electrónico.',
+                    requiresVerification: true,
+                    email: user.email
+                },
+                { status: 403 }
+            );
+        }
+
         // 5. VERIFICAR SI LA CUENTA ESTÁ BLOQUEADA TEMPORALMENTE
         if (user.locked_until && new Date(user.locked_until) > new Date()) {
             await logAuditEvent({

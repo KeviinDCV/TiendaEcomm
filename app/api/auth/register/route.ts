@@ -6,6 +6,16 @@ import { registerSchema } from '@/lib/validations';
 import { checkRateLimit, recordFailedAttempt, getClientIdentifier } from '@/lib/rate-limit';
 import { logAuditEvent, extractRequestInfo } from '@/lib/audit-log';
 import { ZodError } from 'zod';
+import { Resend } from 'resend';
+import { render } from '@react-email/render';
+import HuvVerifyEmail from '@/emails/huv-verify-email';
+
+// Verificar que la API key esté configurada
+if (!process.env.RESEND_API_KEY) {
+    console.error('⚠️ RESEND_API_KEY no está configurada en .env.local');
+}
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(request: NextRequest) {
     const { ipAddress, userAgent } = extractRequestInfo(request);
@@ -61,40 +71,58 @@ export async function POST(request: NextRequest) {
         // 4. HASH DE LA CONTRASEÑA CON SALT ROUNDS ALTO
         const hashedPassword = await hashPassword(password);
 
-        // 5. INSERTAR USUARIO EN LA BASE DE DATOS
+        // 5. GENERAR CÓDIGO DE VERIFICACIÓN
+        const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+        const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutos
+
+        // 6. INSERTAR USUARIO EN LA BASE DE DATOS (NO VERIFICADO)
         const result = await query<any>(
-            `INSERT INTO users (name, email, password, role, is_active, email_verified, failed_login_attempts) 
-             VALUES (?, ?, ?, ?, ?, ?, ?)`,
-            [name, email, hashedPassword, 'usuario', true, false, 0]
+            `INSERT INTO users (name, email, password, role, is_active, email_verified, failed_login_attempts, is_verified, verification_code, verification_code_expires) 
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [name, email, hashedPassword, 'usuario', true, false, 0, false, verificationCode, expiresAt]
         );
 
-        // 6. OBTENER EL USUARIO CREADO
-        const newUser = {
-            id: result.insertId,
-            name,
-            email,
-            role: 'usuario' as const
-        };
+        // 7. ENVIAR EMAIL DE VERIFICACIÓN
+        try {
+            const emailHtml = await render(HuvVerifyEmail({ 
+                validationCode: verificationCode,
+                userName: name
+            }));
 
-        // 7. GENERAR TOKEN JWT
-        const token = generateToken(newUser);
+            const { data, error } = await resend.emails.send({
+                from: 'HUV Medical - Verificación <onboarding@resend.dev>',
+                to: email,
+                subject: 'Verifica tu cuenta en HUV Medical',
+                html: emailHtml,
+            });
+
+            if (error) {
+                console.error('❌ Error detallado de Resend:', JSON.stringify(error, null, 2));
+                throw new Error('Falló el envío de email: ' + error.message);
+            }
+
+            console.log('✅ Email enviado exitosamente. ID:', data?.id);
+        } catch (emailError) {
+            console.error('Error al enviar email de verificación:', emailError);
+            // No fallar el registro si el email falla, el usuario podrá reenviar el código
+        }
 
         // 8. LOG DE AUDITORÍA
         await logAuditEvent({
-            userId: newUser.id,
+            userId: result.insertId,
             eventType: 'register',
             ipAddress,
             userAgent,
-            metadata: { email: newUser.email },
+            metadata: { email, verification_sent: true },
             success: true,
         });
 
         return NextResponse.json<AuthResponse>(
             {
                 success: true,
-                message: 'Usuario registrado exitosamente',
-                user: sanitizeUser(newUser),
-                token
+                message: 'Registro exitoso. Revisa tu correo para verificar tu cuenta.',
+                requiresVerification: true,
+                email: email
             },
             { status: 201 }
         );

@@ -29,7 +29,12 @@ export default function RegisterPage() {
         const result = await register(name, email, password);
 
         if (result.success) {
-            router.push('/');
+            // Redirigir a página de verificación si requiere verificación
+            if (result.requiresVerification) {
+                router.push(`/verify-email?email=${encodeURIComponent(email)}`);
+            } else {
+                router.push('/');
+            }
         } else {
             setError(result.message);
             setLoading(false);

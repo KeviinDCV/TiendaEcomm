@@ -25,7 +25,16 @@ export async function GET(
             return NextResponse.json({ success: false, message: 'Producto no encontrado' }, { status: 404 });
         }
 
-        return NextResponse.json({ success: true, product: products[0] });
+        // Obtener imágenes secundarias
+        const images = await query(
+            'SELECT id, image_url, display_order FROM product_images WHERE product_id = ? ORDER BY display_order ASC',
+            [id]
+        );
+
+        return NextResponse.json({ 
+            success: true, 
+            product: { ...products[0], images: images || [] }
+        });
 
     } catch (error) {
         return NextResponse.json({ success: false, message: 'Error al obtener producto' }, { status: 500 });
@@ -86,7 +95,7 @@ export async function PUT(
             imageUrl = `/uploads/products/${filename}`;
         }
 
-        // 4. Actualizar BD
+        // 4. Actualizar BD (Producto Principal)
         await query(
             `UPDATE products SET 
                 name = ?, description = ?, price = ?, original_price = ?, 
@@ -95,6 +104,55 @@ export async function PUT(
              WHERE id = ?`,
             [name, description, price, originalPrice, stock, category, isFeatured, isActive, imageUrl, id]
         );
+
+        // 5. Manejar imágenes secundarias nuevas
+        const secondaryImages = formData.getAll('secondaryImages') as File[];
+        if (secondaryImages && secondaryImages.length > 0) {
+            const uploadDir = path.join(process.cwd(), 'public/uploads/products');
+            
+            // Obtener el orden más alto actual
+            const maxOrderResult = await query<any[]>(
+                'SELECT MAX(display_order) as maxOrder FROM product_images WHERE product_id = ?',
+                [id]
+            );
+            let currentOrder = (maxOrderResult[0]?.maxOrder || 0) + 1;
+
+            for (const img of secondaryImages) {
+                if (img.size > 0) {
+                    const buffer = Buffer.from(await img.arrayBuffer());
+                    const filename = `${nanoid()}-${img.name.replace(/\s+/g, '-').toLowerCase()}`;
+                    const filePath = path.join(uploadDir, filename);
+                    
+                    try {
+                        await writeFile(filePath, buffer);
+                        const secImageUrl = `/uploads/products/${filename}`;
+                        
+                        await query(
+                            `INSERT INTO product_images (product_id, image_url, display_order) VALUES (?, ?, ?)`,
+                            [id, secImageUrl, currentOrder++]
+                        );
+                    } catch (err) {
+                        console.error('Error saving secondary image:', err);
+                    }
+                }
+            }
+        }
+
+        // 6. Eliminar imágenes secundarias seleccionadas
+        const deletedImageIds = formData.getAll('deletedImageIds');
+        if (deletedImageIds && deletedImageIds.length > 0) {
+             // Convertir a string separados por coma para la consulta IN, asegurando que sean números
+             const idsToDelete = deletedImageIds.map(did => parseInt(did.toString())).filter(n => !isNaN(n));
+             
+             if (idsToDelete.length > 0) {
+                 // Nota: En un sistema real, también deberíamos borrar el archivo físico del disco
+                 const placeholders = idsToDelete.map(() => '?').join(',');
+                 await query(
+                     `DELETE FROM product_images WHERE id IN (${placeholders}) AND product_id = ?`,
+                     [...idsToDelete, id]
+                 );
+             }
+        }
 
         return NextResponse.json({
             success: true,

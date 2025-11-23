@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import AiAssistant from "./components/AiAssistant";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { CartProvider } from "@/contexts/CartContext";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -24,8 +25,10 @@ export default function RootLayout({
     <html lang="es">
       <body className={`${inter.variable} antialiased bg-[hsl(210,20%,98%)] text-[hsl(210,15%,10%)]`}>
         <AuthProvider>
-          {children}
-          <AiAssistant />
+          <CartProvider>
+            {children}
+            <AiAssistant />
+          </CartProvider>
         </AuthProvider>
       </body>
     </html>

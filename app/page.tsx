@@ -179,9 +179,7 @@ export default function HomePage() {
           <div className="bg-white rounded-lg shadow-sm overflow-hidden mb-6 group relative">
             <div className="relative h-[340px] md:h-[400px] w-full">
               {loadingBanners ? (
-                  <div className="w-full h-full bg-gray-200 animate-pulse flex items-center justify-center text-gray-400">
-                      Cargando banners...
-                  </div>
+                  <div className="w-full h-full bg-gray-200 animate-pulse"></div>
               ) : banners.length > 0 ? (
                   <>
                     {/* Slides */}

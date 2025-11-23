@@ -25,6 +25,8 @@ export interface AuthResponse {
     message: string;
     user?: UserResponse;
     token?: string;
+    requiresVerification?: boolean;
+    email?: string;
 }
 
 export interface DecodedToken {

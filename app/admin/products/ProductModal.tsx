@@ -15,6 +15,7 @@ interface Product {
     image_url?: string;
     is_featured: boolean;
     is_active: boolean;
+    images?: { id: number; image_url: string; display_order: number }[];
 }
 
 interface ProductModalProps {
@@ -28,6 +29,10 @@ export default function ProductModal({ isOpen, onClose, onSave, product }: Produ
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [imagePreview, setImagePreview] = useState<string | null>(null);
+    
+    // Gestión de imágenes secundarias
+    const [secondaryPreviews, setSecondaryPreviews] = useState<{ id?: number; url: string; file?: File }[]>([]);
+    const [deletedImageIds, setDeletedImageIds] = useState<number[]>([]);
 
     const [formData, setFormData] = useState({
         name: '',
@@ -42,7 +47,8 @@ export default function ProductModal({ isOpen, onClose, onSave, product }: Produ
     });
 
     useEffect(() => {
-        if (product) {
+        if (isOpen && product) {
+            // Cargar datos básicos
             setFormData({
                 name: product.name,
                 description: product.description || '',
@@ -55,7 +61,32 @@ export default function ProductModal({ isOpen, onClose, onSave, product }: Produ
                 image: null
             });
             setImagePreview(product.image_url || null);
-        } else {
+            
+            // Resetear estados de imágenes secundarias
+            setSecondaryPreviews([]);
+            setDeletedImageIds([]);
+
+            // Fetch detalles completos (imágenes secundarias)
+            const fetchProductDetails = async () => {
+                try {
+                    const token = Cookies.get('auth_token');
+                    const res = await fetch(`/api/admin/products/${product.id}`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    const data = await res.json();
+                    if (data.success && data.product.images) {
+                        setSecondaryPreviews(data.product.images.map((img: any) => ({
+                            id: img.id,
+                            url: img.image_url
+                        })));
+                    }
+                } catch (err) {
+                    console.error('Error loading product details:', err);
+                }
+            };
+            fetchProductDetails();
+
+        } else if (isOpen) {
             // Reset form for new product
             setFormData({
                 name: '',
@@ -69,6 +100,8 @@ export default function ProductModal({ isOpen, onClose, onSave, product }: Produ
                 image: null
             });
             setImagePreview(null);
+            setSecondaryPreviews([]);
+            setDeletedImageIds([]);
         }
         setError('');
     }, [product, isOpen]);
@@ -83,6 +116,39 @@ export default function ProductModal({ isOpen, onClose, onSave, product }: Produ
             };
             reader.readAsDataURL(file);
         }
+    };
+
+    const handleSecondaryImagesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = e.target.files;
+        if (files && files.length > 0) {
+            // Validar límite de 10 imágenes totales
+            const currentCount = secondaryPreviews.length;
+            const newCount = files.length;
+            
+            if (currentCount + newCount > 10) {
+                alert('Máximo 10 imágenes secundarias permitidas');
+                return;
+            }
+
+            Array.from(files).forEach(file => {
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    setSecondaryPreviews(prev => [...prev, {
+                        url: reader.result as string,
+                        file: file
+                    }]);
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+    };
+
+    const removeSecondaryImage = (index: number) => {
+        const img = secondaryPreviews[index];
+        if (img.id) {
+            setDeletedImageIds(prev => [...prev, img.id!]);
+        }
+        setSecondaryPreviews(prev => prev.filter((_, i) => i !== index));
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -106,6 +172,18 @@ export default function ProductModal({ isOpen, onClose, onSave, product }: Produ
             } else if (product?.image_url) {
                 data.append('currentImageUrl', product.image_url);
             }
+
+            // Agregar imágenes secundarias nuevas
+            secondaryPreviews.forEach(img => {
+                if (img.file) {
+                    data.append('secondaryImages', img.file);
+                }
+            });
+
+            // Agregar IDs de imágenes eliminadas
+            deletedImageIds.forEach(id => {
+                data.append('deletedImageIds', id.toString());
+            });
 
             const token = Cookies.get('auth_token');
             const url = product ? `/api/admin/products/${product.id}` : '/api/admin/products';
@@ -138,7 +216,7 @@ export default function ProductModal({ isOpen, onClose, onSave, product }: Produ
 
     return (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
-            <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="bg-white rounded-xl shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
                 <div className="p-6 border-b border-gray-100 flex justify-between items-center sticky top-0 bg-white z-10">
                     <h3 className="text-xl font-bold text-gray-800">
                         {product ? 'Editar Producto' : 'Nuevo Producto'}
@@ -159,28 +237,75 @@ export default function ProductModal({ isOpen, onClose, onSave, product }: Produ
                     </div>
                 )}
 
-                <form onSubmit={handleSubmit} className="p-6 space-y-6">
-                    {/* Imagen Upload */}
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Imagen del Producto</label>
-                        <div className="flex items-center gap-6">
-                            <div className="h-32 w-32 bg-gray-100 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden relative flex-shrink-0">
-                                {imagePreview ? (
-                                    <img src={imagePreview} alt="Preview" className="h-full w-full object-cover" />
-                                ) : (
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                    </svg>
-                                )}
+                <form onSubmit={handleSubmit} className="p-6 space-y-8">
+                    {/* Sección de Imágenes */}
+                    <div className="space-y-6">
+                        <h4 className="text-lg font-semibold text-gray-800 border-b pb-2">Imágenes del Producto</h4>
+                        
+                        {/* Imagen Principal */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Imagen Principal (Portada)</label>
+                            <div className="flex items-center gap-6">
+                                <div className="h-32 w-32 bg-gray-100 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden relative flex-shrink-0 group">
+                                    {imagePreview ? (
+                                        <img src={imagePreview} alt="Preview" className="h-full w-full object-contain" />
+                                    ) : (
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                        </svg>
+                                    )}
+                                </div>
+                                <div className="flex-1">
+                                    <input 
+                                        type="file" 
+                                        accept="image/*"
+                                        onChange={handleImageChange}
+                                        className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20 cursor-pointer"
+                                    />
+                                    <p className="text-xs text-gray-500 mt-2">Esta será la imagen principal que se muestra en listados.</p>
+                                </div>
                             </div>
-                            <div className="flex-1">
-                                <input 
-                                    type="file" 
-                                    accept="image/*"
-                                    onChange={handleImageChange}
-                                    className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20"
-                                />
-                                <p className="text-xs text-gray-500 mt-2">PNG, JPG, WEBP hasta 5MB</p>
+                        </div>
+
+                        {/* Imágenes Secundarias */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Galería de Imágenes (Máx 10)
+                                <span className="text-xs font-normal text-gray-500 ml-2">{secondaryPreviews.length}/10</span>
+                            </label>
+                            
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                                {secondaryPreviews.map((img, index) => (
+                                    <div key={index} className="relative h-24 bg-gray-50 rounded-lg border border-gray-200 flex items-center justify-center group overflow-hidden">
+                                        <img src={img.url} alt={`Galería ${index}`} className="h-full w-full object-contain" />
+                                        <button
+                                            type="button"
+                                            onClick={() => removeSecondaryImage(index)}
+                                            className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
+                                            title="Eliminar imagen"
+                                        >
+                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                                <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L10 8.586 5.707 4.293a1 1 0 010-1.414z" clipRule="evenodd" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                ))}
+                                
+                                {secondaryPreviews.length < 10 && (
+                                    <label className="h-24 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300 flex flex-col items-center justify-center cursor-pointer hover:bg-gray-100 transition-colors">
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                                        </svg>
+                                        <span className="text-xs text-gray-500 mt-1">Agregar</span>
+                                        <input 
+                                            type="file" 
+                                            multiple 
+                                            accept="image/*" 
+                                            className="hidden"
+                                            onChange={handleSecondaryImagesChange}
+                                        />
+                                    </label>
+                                )}
                             </div>
                         </div>
                     </div>

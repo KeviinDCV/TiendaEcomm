@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
 
         let imageUrl = '';
 
-        // 3. Guardar Imagen
+        // 3. Guardar Imagen Principal
         if (imageFile) {
             const buffer = Buffer.from(await imageFile.arrayBuffer());
             const filename = `${nanoid()}-${imageFile.name.replace(/\s+/g, '-').toLowerCase()}`;
@@ -55,18 +55,51 @@ export async function POST(request: NextRequest) {
             imageUrl = `/uploads/products/${filename}`;
         }
 
-        // 4. Insertar en Base de Datos
+        // 4. Insertar en Base de Datos (Producto Principal)
         const result = await query<any>(
             `INSERT INTO products 
             (name, description, price, original_price, stock, image_url, category, is_featured, created_at) 
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())`,
             [name, description, price, originalPrice, stock, imageUrl, category, isFeatured]
         );
+        
+        const productId = result.insertId;
+
+        // 5. Procesar Imágenes Secundarias (hasta 10)
+        const secondaryImages = formData.getAll('secondaryImages') as File[];
+        
+        if (secondaryImages && secondaryImages.length > 0) {
+            const uploadDir = path.join(process.cwd(), 'public/uploads/products');
+            
+            // Limitar a 10 imágenes
+            const imagesToProcess = secondaryImages.slice(0, 10);
+            
+            for (let i = 0; i < imagesToProcess.length; i++) {
+                const img = imagesToProcess[i];
+                if (img.size > 0) {
+                    const buffer = Buffer.from(await img.arrayBuffer());
+                    const filename = `${nanoid()}-${img.name.replace(/\s+/g, '-').toLowerCase()}`;
+                    const filePath = path.join(uploadDir, filename);
+                    
+                    try {
+                        await writeFile(filePath, buffer);
+                        const secImageUrl = `/uploads/products/${filename}`;
+                        
+                        await query(
+                            `INSERT INTO product_images (product_id, image_url, display_order) VALUES (?, ?, ?)`,
+                            [productId, secImageUrl, i]
+                        );
+                    } catch (err) {
+                        console.error('Error saving secondary image:', err);
+                    }
+                }
+            }
+        }
 
         return NextResponse.json({
             success: true,
             message: 'Producto creado exitosamente',
-            productId: result.insertId
+            productId: productId
         }, { status: 201 });
 
     } catch (error) {

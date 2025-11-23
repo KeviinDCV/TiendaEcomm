@@ -9,17 +9,66 @@ export default function AdminDashboard() {
         todayLogins: 0,
         securityAlerts: 0
     });
+    const [loading, setLoading] = useState(true);
 
     // TODO: Conectar con API real
     useEffect(() => {
         // Mock data
-        setStats({
-            totalUsers: 15,
-            activeUsers: 12,
-            todayLogins: 45,
-            securityAlerts: 2
-        });
+        const timer = setTimeout(() => {
+            setStats({
+                totalUsers: 15,
+                activeUsers: 12,
+                todayLogins: 45,
+                securityAlerts: 2
+            });
+            setLoading(false);
+        }, 1000);
+        return () => clearTimeout(timer);
     }, []);
+
+    if (loading) {
+        return (
+            <div>
+                <div className="h-8 w-48 bg-gray-200 rounded mb-6 animate-pulse"></div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    {[1, 2, 3, 4].map(i => (
+                        <div key={i} className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 h-32 animate-pulse">
+                            <div className="flex justify-between mb-4">
+                                <div className="h-4 w-24 bg-gray-200 rounded"></div>
+                                <div className="h-8 w-8 bg-gray-200 rounded"></div>
+                            </div>
+                            <div className="h-8 w-16 bg-gray-200 rounded mb-2"></div>
+                            <div className="h-3 w-32 bg-gray-200 rounded"></div>
+                        </div>
+                    ))}
+                </div>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 h-64 animate-pulse">
+                        <div className="h-6 w-32 bg-gray-200 rounded mb-6"></div>
+                        <div className="space-y-4">
+                            {[1, 2, 3].map(i => (
+                                <div key={i} className="flex gap-4">
+                                    <div className="h-8 w-8 bg-gray-200 rounded-full"></div>
+                                    <div className="space-y-2 flex-1">
+                                        <div className="h-4 w-3/4 bg-gray-200 rounded"></div>
+                                        <div className="h-3 w-1/2 bg-gray-200 rounded"></div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                    <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 h-64 animate-pulse">
+                        <div className="h-6 w-32 bg-gray-200 rounded mb-6"></div>
+                        <div className="grid grid-cols-2 gap-4">
+                            {[1, 2, 3, 4].map(i => (
+                                <div key={i} className="h-20 bg-gray-200 rounded"></div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div>

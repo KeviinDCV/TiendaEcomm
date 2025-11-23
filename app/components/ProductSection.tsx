@@ -24,9 +24,10 @@ interface SectionConfig {
 interface SectionProps {
     title: string;
     config: string; // JSON string
+    excludeId?: number;
 }
 
-export default function ProductSection({ title, config }: SectionProps) {
+export default function ProductSection({ title, config, excludeId }: SectionProps) {
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
     
@@ -38,13 +39,20 @@ export default function ProductSection({ title, config }: SectionProps) {
             try {
                 const params = new URLSearchParams();
                 if (sectionConfig.category) params.append('category', sectionConfig.category);
-                if (sectionConfig.limit) params.append('limit', sectionConfig.limit.toString());
+                // Fetch a few more if we are going to filter one out
+                const limit = (sectionConfig.limit || 4) + (excludeId ? 1 : 0);
+                params.append('limit', limit.toString());
                 if (sectionConfig.sortBy) params.append('sortBy', sectionConfig.sortBy);
 
                 const res = await fetch(`/api/products?${params.toString()}`);
                 const data = await res.json();
                 if (data.success) {
-                    setProducts(data.products);
+                    let fetchedProducts = data.products as Product[];
+                    if (excludeId) {
+                        fetchedProducts = fetchedProducts.filter(p => p.id !== excludeId);
+                    }
+                    // Limit again to the original requested amount after filtering
+                    setProducts(fetchedProducts.slice(0, sectionConfig.limit || 4));
                 }
             } catch (error) {
                 console.error('Error fetching section products:', error);
@@ -54,7 +62,7 @@ export default function ProductSection({ title, config }: SectionProps) {
         };
 
         fetchProducts();
-    }, [config]);
+    }, [config, excludeId]);
 
     if (!loading && products.length === 0) return null; // Don't show empty sections
 
@@ -82,10 +90,18 @@ export default function ProductSection({ title, config }: SectionProps) {
             ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
                     {products.map((product) => (
-                        <div key={product.id} className="bg-white rounded-md shadow-sm hover:shadow-lg transition-shadow cursor-pointer flex flex-col">
+                        <Link 
+                            href={`/product/${product.id}`}
+                            key={product.id} 
+                            className="bg-white rounded-md shadow-sm hover:shadow-lg transition-shadow cursor-pointer flex flex-col group"
+                        >
                             <div className="h-48 border-b border-gray-50 p-4 flex items-center justify-center relative">
                                 {product.image_url ? (
-                                    <img src={product.image_url} alt={product.name} className="max-h-full max-w-full object-contain mix-blend-multiply" />
+                                    <img 
+                                        src={product.image_url} 
+                                        alt={product.name} 
+                                        className="max-h-full max-w-full object-contain mix-blend-multiply group-hover:scale-105 transition-transform duration-300" 
+                                    />
                                 ) : (
                                     <div className="flex items-center justify-center h-full w-full bg-gray-100">
                                         <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -100,7 +116,7 @@ export default function ProductSection({ title, config }: SectionProps) {
                                 )}
                             </div>
                             <div className="p-4 flex-1 flex flex-col">
-                                <h3 className="text-gray-900 text-sm font-light line-clamp-2 mb-2 h-10">
+                                <h3 className="text-gray-900 text-sm font-light line-clamp-2 mb-2 h-10 group-hover:text-primary transition-colors">
                                     {product.name}
                                 </h3>
 
@@ -118,7 +134,7 @@ export default function ProductSection({ title, config }: SectionProps) {
                                     Llega gratis mañana
                                 </div>
                             </div>
-                        </div>
+                        </Link>
                     ))}
                 </div>
             )}

@@ -24,8 +24,13 @@ export default function LoginPage() {
         if (result.success) {
             router.push('/');
         } else {
-            setError(result.message);
-            setLoading(false);
+            // Si requiere verificación, redirigir a la página de verificación
+            if (result.requiresVerification && result.email) {
+                router.push(`/verify-email?email=${encodeURIComponent(result.email)}`);
+            } else {
+                setError(result.message);
+                setLoading(false);
+            }
         }
     };
 
