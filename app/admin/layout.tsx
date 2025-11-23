@@ -73,6 +73,16 @@ export default function AdminLayout({
                     </Link>
 
                     <Link 
+                        href="/admin/sections" 
+                        className="flex items-center gap-3 px-4 py-3 text-gray-700 rounded hover:bg-gray-50 hover:text-primary transition-colors font-medium"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
+                        </svg>
+                        Secciones
+                    </Link>
+
+                    <Link 
                         href="/admin/users" 
                         className="flex items-center gap-3 px-4 py-3 text-gray-700 rounded hover:bg-gray-50 hover:text-primary transition-colors font-medium"
                     >

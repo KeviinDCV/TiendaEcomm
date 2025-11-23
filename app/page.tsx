@@ -6,6 +6,7 @@ import { useState, useEffect, useRef } from 'react';
 
 import PaymentStrip from './components/PaymentStrip';
 import Navbar from './components/Navbar';
+import ProductSection from './components/ProductSection';
 
 interface Category {
   id: number;
@@ -34,6 +35,14 @@ interface Banner {
   link_url: string;
 }
 
+interface Section {
+  id: number;
+  title: string;
+  type: string;
+  config: string;
+  display_order: number;
+}
+
 export default function HomePage() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -42,6 +51,8 @@ export default function HomePage() {
   const [loadingProducts, setLoadingProducts] = useState(true);
   const [banners, setBanners] = useState<Banner[]>([]);
   const [loadingBanners, setLoadingBanners] = useState(true);
+  const [sections, setSections] = useState<Section[]>([]);
+  const [loadingSections, setLoadingSections] = useState(true);
   const ofertasRef = useRef<HTMLDivElement>(null);
   
   useEffect(() => {
@@ -73,8 +84,23 @@ export default function HomePage() {
         }
     };
 
+    const fetchSections = async () => {
+        try {
+            const res = await fetch('/api/sections');
+            const data = await res.json();
+            if (data.success) {
+                setSections(data.sections);
+            }
+        } catch (error) {
+            console.error('Error loading sections', error);
+        } finally {
+            setLoadingSections(false);
+        }
+    };
+
     fetchCategories();
     fetchBanners();
+    fetchSections();
   }, []);
 
   useEffect(() => {
@@ -360,6 +386,15 @@ export default function HomePage() {
               </div>
             )}
           </div>
+
+          {/* Dynamic Sections */}
+          {!loadingSections && sections.map(section => (
+              <ProductSection 
+                  key={section.id} 
+                  title={section.title} 
+                  config={section.config} 
+              />
+          ))}
 
           {/* Categories Grid (Mercado Libre Style) */}
           <div className="mb-12">

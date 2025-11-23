@@ -16,12 +16,6 @@ export default function AiAssistant() {
     const [messages, setMessages] = useState<Message[]>([
         { id: 1, text: '¡Hola! Soy el asistente inteligente de HUV. Puedo ayudarte a buscar productos, consultar precios o resolver dudas sobre envíos. ¿Qué necesitas hoy?', sender: 'bot' }
     ]);
-
-    // No mostrar el chatbot en rutas administrativas
-    if (pathname?.startsWith('/admin')) {
-        return null;
-    }
-
     const [inputValue, setInputValue] = useState('');
     const [isTyping, setIsTyping] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -33,6 +27,11 @@ export default function AiAssistant() {
     useEffect(() => {
         scrollToBottom();
     }, [messages, isOpen, isTyping]);
+
+    // No mostrar el chatbot en rutas administrativas
+    if (pathname?.startsWith('/admin')) {
+        return null;
+    }
 
     const renderMessageText = (text: string) => {
         const parts = text.split(/(\*\*.*?\*\*)/g);

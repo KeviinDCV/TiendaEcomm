@@ -135,11 +135,15 @@ export default function Navbar() {
                     </Link>
                   )}
 
-                  <Link 
-                    href="/profile" 
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
-                    Mi cuenta
-                  </Link>
+                  {user.role !== 'administrador' && (
+                    <Link 
+                        href="/profile" 
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                        onClick={() => setShowUserMenu(false)}
+                    >
+                        Mi cuenta
+                    </Link>
+                  )}
                   <Link href="/" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
                     Mis pedidos
                   </Link>
